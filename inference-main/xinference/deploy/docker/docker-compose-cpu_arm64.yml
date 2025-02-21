@@ -1,0 +1,23 @@
+version: '4.38.0'
+services:
+  xinference:
+    container_name: Xinference:0221
+    image: xinference:1.0-cpu-arm64
+
+    # Docker Compose 开机启动容器
+    restart: always
+    environment:
+      - XINFERENCE_MODEL_SRC=modelscope
+    ports:
+      - "9998:9997"
+    
+    # 容器开机启动 xinference服务、bge-reranker-v2-m3模型
+    command: 
+      sh -c 
+      "xinference-local -H 0.0.0.0 --log-level debug &
+        until curl -sf http://localhost:9997/status; do sleep 1; done &&
+        xinference launch --model-name bge-reranker-v2-m3 --model-type rerank &&
+        tail -f /dev/null
+      "
+      # apt-get -y install netcat &&
+      # while ! nc -z localhost 9997; do sleep 10; done &&
